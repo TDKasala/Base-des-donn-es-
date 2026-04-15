@@ -62,6 +62,8 @@ export default defineConfig(({mode}) => {
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
     },
+    // Vite exposes VITE_* vars via import.meta.env automatically.
+    // VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY need no extra wiring here.
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
