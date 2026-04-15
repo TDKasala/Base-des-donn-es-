@@ -1,0 +1,6 @@
+{
+  "name": "SchoolConnect CRM",
+  "description": "Convert an Excel-based school prospect database into a web app with forms and localStorage persistence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
