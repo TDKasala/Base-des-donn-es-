@@ -7,5 +7,6 @@ export interface School {
   promoteur: string;
   phone: string;
   status: SchoolStatus;
+  description?: string;
   createdAt: number;
 }

@@ -5,7 +5,6 @@ import { SchoolForm } from '../components/SchoolForm';
 import { Plus, Search, Edit2, Trash2, Building2, Upload, FileDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
-import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -17,7 +16,6 @@ export function Schools() {
   const [activeFilter, setActiveFilter] = useState<SchoolStatus | 'All'>('All');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setSchools(getSchools());
@@ -26,42 +24,6 @@ export function Schools() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, activeFilter]);
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      try {
-        const bstr = evt.target?.result;
-        const wb = XLSX.read(bstr, { type: 'binary' });
-        const wsname = wb.SheetNames[0];
-        const ws = wb.Sheets[wsname];
-        const data = XLSX.utils.sheet_to_json(ws);
-
-        const newSchools: School[] = data.map((row: any) => ({
-          id: Math.random().toString(36).substr(2, 9),
-          ecole: row['Ecole'] || row['ecole'] || row['École'] || 'Inconnu',
-          lieu: row['Lieu'] || row['lieu'] || '',
-          promoteur: row['Promoteur'] || row['promoteur'] || '',
-          phone: row['Téléphone'] || row['Telephone'] || row['phone'] || '',
-          status: (row['Statut'] || row['status'] || 'En attente') as SchoolStatus,
-          createdAt: Date.now(),
-        }));
-
-        const updatedSchools = [...newSchools, ...schools];
-        setSchools(updatedSchools);
-        saveSchools(updatedSchools);
-        toast.success(`${newSchools.length} écoles importées avec succès`);
-      } catch (error) {
-        console.error(error);
-        toast.error('Erreur lors de l\'importation du fichier');
-      }
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    };
-    reader.readAsBinaryString(file);
-  };
 
   const handleAddSchool = (data: Omit<School, 'id' | 'createdAt'>) => {
     const newSchool: School = {
@@ -162,21 +124,6 @@ export function Schools() {
           <p className="text-gray-500 mt-1">Gérez votre base de données d'écoles.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <input
-            type="file"
-            accept=".xlsx, .xls"
-            className="hidden"
-            ref={fileInputRef}
-            onChange={handleFileUpload}
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-colors shadow-sm w-full sm:w-auto"
-          >
-            <Upload className="w-5 h-5" />
-            <span className="hidden sm:inline">Importer</span>
-            <span className="sm:hidden">Importer Excel</span>
-          </button>
           <button
             onClick={exportToPDF}
             className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-colors shadow-sm w-full sm:w-auto"
@@ -301,6 +248,9 @@ export function Schools() {
                 <div className="text-sm text-gray-600 space-y-1">
                   <p><span className="text-gray-400">Promoteur:</span> {school.promoteur}</p>
                   <p><span className="text-gray-400">Tél:</span> {school.phone}</p>
+                  {school.description && (
+                    <p className="mt-2 text-gray-500 italic line-clamp-2 border-l-2 border-gray-200 pl-2">{school.description}</p>
+                  )}
                 </div>
                 <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-50">
                   <button

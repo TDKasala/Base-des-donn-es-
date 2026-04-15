@@ -16,6 +16,7 @@ export function SchoolForm({ initialData, onSubmit, onClose }: SchoolFormProps) 
     promoteur: initialData?.promoteur || '',
     phone: initialData?.phone || '',
     status: initialData?.status || 'En attente' as SchoolStatus,
+    description: initialData?.description || '',
   });
   const [errors, setErrors] = useState<{ ecole?: string; phone?: string }>({});
 
@@ -147,6 +148,19 @@ export function SchoolForm({ initialData, onSubmit, onClose }: SchoolFormProps) 
               <option value="Client">Client</option>
               <option value="Refusé">Refusé</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Description / Notes
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              placeholder="Notes supplémentaires, détails du contact..."
+              rows={3}
+            />
           </div>
 
           <div className="pt-4 flex gap-3">
