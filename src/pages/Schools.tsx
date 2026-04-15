@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { School, SchoolStatus } from '../types';
 import { getSchools, saveSchools } from '../utils/storage';
 import { SchoolForm } from '../components/SchoolForm';
-import { Plus, Search, Edit2, Trash2, Building2, Upload, FileDown } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Building2, Upload, FileDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
 import * as XLSX from 'xlsx';
@@ -15,11 +15,17 @@ export function Schools() {
   const [editingSchool, setEditingSchool] = useState<School | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<SchoolStatus | 'All'>('All');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setSchools(getSchools());
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, activeFilter]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -97,6 +103,16 @@ export function Schools() {
     const matchesFilter = activeFilter === 'All' || school.status === activeFilter;
     return matchesSearch && matchesFilter;
   });
+
+  const totalPages = Math.ceil(filteredSchools.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedSchools = filteredSchools.slice(startIndex, startIndex + itemsPerPage);
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
 
   const exportToPDF = () => {
     try {
@@ -223,8 +239,8 @@ export function Schools() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredSchools.length > 0 ? (
-                filteredSchools.map((school) => (
+              {paginatedSchools.length > 0 ? (
+                paginatedSchools.map((school) => (
                   <tr key={school.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4 font-medium text-gray-900">{school.ecole}</td>
                     <td className="px-6 py-4 text-gray-600">{school.lieu}</td>
@@ -270,8 +286,8 @@ export function Schools() {
 
         {/* Mobile Card View */}
         <div className="grid grid-cols-1 gap-4 md:hidden mt-4">
-          {filteredSchools.length > 0 ? (
-            filteredSchools.map((school) => (
+          {paginatedSchools.length > 0 ? (
+            paginatedSchools.map((school) => (
               <div key={school.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3">
                 <div className="flex justify-between items-start">
                   <div>
@@ -312,6 +328,69 @@ export function Schools() {
             </div>
           )}
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between border-t border-gray-100 pt-4 mt-4">
+            <div className="flex flex-1 justify-between sm:hidden">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Précédent
+              </button>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="relative ml-3 inline-flex items-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Suivant
+              </button>
+            </div>
+            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Affichage de <span className="font-medium">{filteredSchools.length === 0 ? 0 : startIndex + 1}</span> à <span className="font-medium">{Math.min(startIndex + itemsPerPage, filteredSchools.length)}</span> sur <span className="font-medium">{filteredSchools.length}</span> écoles
+                </p>
+              </div>
+              <div>
+                <nav className="isolate inline-flex -space-x-px rounded-xl shadow-sm" aria-label="Pagination">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center rounded-l-xl px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-200 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <span className="sr-only">Précédent</span>
+                    <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={cn(
+                        "relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0 transition-colors",
+                        currentPage === page
+                          ? "z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                          : "text-gray-900 ring-1 ring-inset ring-gray-200 hover:bg-gray-50"
+                      )}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="relative inline-flex items-center rounded-r-xl px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-200 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <span className="sr-only">Suivant</span>
+                    <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {(isFormOpen || editingSchool) && (

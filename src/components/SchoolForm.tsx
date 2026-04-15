@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { School, SchoolStatus } from '../types';
 import { X } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 interface SchoolFormProps {
   initialData?: School | null;
@@ -16,9 +17,29 @@ export function SchoolForm({ initialData, onSubmit, onClose }: SchoolFormProps) 
     phone: initialData?.phone || '',
     status: initialData?.status || 'En attente' as SchoolStatus,
   });
+  const [errors, setErrors] = useState<{ ecole?: string; phone?: string }>({});
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const newErrors: { ecole?: string; phone?: string } = {};
+    
+    if (!formData.ecole.trim()) {
+      newErrors.ecole = 'Le nom de l\'école est requis';
+    }
+    
+    const phoneRegex = /^\+?[0-9\s\-()]{8,15}$/;
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Le numéro de téléphone est requis';
+    } else if (!phoneRegex.test(formData.phone)) {
+      newErrors.phone = 'Numéro de téléphone invalide (ex: 099999999 ou +243...)';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     onSubmit(formData);
   };
 
@@ -46,10 +67,19 @@ export function SchoolForm({ initialData, onSubmit, onClose }: SchoolFormProps) 
               required
               type="text"
               value={formData.ecole}
-              onChange={(e) => setFormData({ ...formData, ecole: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onChange={(e) => {
+                setFormData({ ...formData, ecole: e.target.value });
+                if (errors.ecole) setErrors({ ...errors, ecole: undefined });
+              }}
+              className={cn(
+                "w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2",
+                errors.ecole 
+                  ? "border-red-500 focus:ring-red-500" 
+                  : "border-gray-200 focus:ring-blue-500 focus:border-transparent"
+              )}
               placeholder="Ex: Ecole Les Génies"
             />
+            {errors.ecole && <p className="text-red-500 text-xs mt-1">{errors.ecole}</p>}
           </div>
 
           <div>
@@ -88,10 +118,19 @@ export function SchoolForm({ initialData, onSubmit, onClose }: SchoolFormProps) 
               required
               type="tel"
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onChange={(e) => {
+                setFormData({ ...formData, phone: e.target.value });
+                if (errors.phone) setErrors({ ...errors, phone: undefined });
+              }}
+              className={cn(
+                "w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2",
+                errors.phone 
+                  ? "border-red-500 focus:ring-red-500" 
+                  : "border-gray-200 focus:ring-blue-500 focus:border-transparent"
+              )}
               placeholder="Ex: 099999999"
             />
+            {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
           </div>
 
           <div>
