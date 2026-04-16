@@ -9,4 +9,5 @@ export interface School {
   status: SchoolStatus;
   description?: string;
   createdAt: number;
+  createdBy?: string;
 }

@@ -21,10 +21,14 @@ export const getSchools = async (): Promise<School[]> => {
     status: row.status,
     description: row.description ?? undefined,
     createdAt: new Date(row.created_at).getTime(),
+    createdBy: row.created_by ?? undefined,
   }));
 };
 
-export const addSchool = async (school: Omit<School, 'id' | 'createdAt'>): Promise<School | null> => {
+export const addSchool = async (
+  school: Omit<School, 'id' | 'createdAt'>,
+  createdBy: string
+): Promise<School | null> => {
   const { data, error } = await supabase
     .from('schools')
     .insert({
@@ -34,6 +38,7 @@ export const addSchool = async (school: Omit<School, 'id' | 'createdAt'>): Promi
       phone: school.phone,
       status: school.status,
       description: school.description ?? null,
+      created_by: createdBy,
     })
     .select()
     .single();
@@ -52,6 +57,7 @@ export const addSchool = async (school: Omit<School, 'id' | 'createdAt'>): Promi
     status: data.status,
     description: data.description ?? undefined,
     createdAt: new Date(data.created_at).getTime(),
+    createdBy: data.created_by ?? undefined,
   };
 };
 

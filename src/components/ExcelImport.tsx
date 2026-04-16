@@ -8,6 +8,7 @@ import { cn } from '../lib/utils';
 interface ExcelImportProps {
   onClose: () => void;
   onImported: () => void;
+  createdBy: string;
 }
 
 type SchoolField = 'ecole' | 'lieu' | 'promoteur' | 'phone' | 'status' | 'description' | 'ignore';
@@ -47,7 +48,7 @@ function normalizeStatus(val: string): SchoolStatus {
   return 'En attente';
 }
 
-export function ExcelImport({ onClose, onImported }: ExcelImportProps) {
+export function ExcelImport({ onClose, onImported, createdBy }: ExcelImportProps) {
   const [step, setStep] = useState<'upload' | 'preview' | 'importing' | 'done'>('upload');
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState('');
@@ -138,7 +139,7 @@ export function ExcelImport({ onClose, onImported }: ExcelImportProps) {
         phone,
         status: normalizeStatus(get('status')),
         description: get('description') || undefined,
-      });
+      }, createdBy);
 
       if (!result) {
         errs.push({ row: i + 2, message: `Ligne ${i + 2} : erreur lors de l'insertion` });

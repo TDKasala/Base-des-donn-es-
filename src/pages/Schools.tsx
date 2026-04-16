@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { School, SchoolStatus } from '../types';
 import { getSchools, addSchool, updateSchool, deleteSchool } from '../utils/storage';
 import { SchoolForm } from '../components/SchoolForm';
+import { useAuth } from '../contexts/AuthContext';
 import { Plus, Search, Edit2, Trash2, Building2, Upload, FileDown, ChevronLeft, ChevronRight, Code2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
@@ -11,6 +12,7 @@ import { SqlQueryPanel } from '../components/SqlQueryPanel';
 import { ExcelImport } from '../components/ExcelImport';
 
 export function Schools() {
+  const { user } = useAuth();
   const [schools, setSchools] = useState<School[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSchool, setEditingSchool] = useState<School | null>(null);
@@ -34,7 +36,7 @@ export function Schools() {
   }, [searchQuery, activeFilter]);
 
   const handleAddSchool = async (data: Omit<School, 'id' | 'createdAt'>) => {
-    const newSchool = await addSchool(data);
+    const newSchool = await addSchool(data, user?.username ?? 'inconnu');
     if (!newSchool) {
       toast.error('Erreur lors de l\'ajout de l\'école');
       return;
@@ -207,13 +209,14 @@ export function Schools() {
                 <th className="px-6 py-4 font-medium">Promoteur</th>
                 <th className="px-6 py-4 font-medium">Téléphone</th>
                 <th className="px-6 py-4 font-medium">Statut</th>
+                <th className="px-6 py-4 font-medium">Saisi par</th>
                 <th className="px-6 py-4 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-400 text-sm">
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-400 text-sm">
                     Chargement…
                   </td>
                 </tr>
@@ -227,6 +230,11 @@ export function Schools() {
                     <td className="px-6 py-4">
                       <span className={cn('px-3 py-1 rounded-full text-xs font-medium', getStatusColor(school.status))}>
                         {school.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                        {school.createdBy ?? '—'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -249,7 +257,7 @@ export function Schools() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                     <div className="flex flex-col items-center justify-center">
                       <Building2 className="w-10 h-10 text-gray-300 mb-3" />
                       <p className="text-base font-medium text-gray-900">Aucune école trouvée</p>
@@ -281,6 +289,7 @@ export function Schools() {
                 <div className="text-sm text-gray-600 space-y-1">
                   <p><span className="text-gray-400">Promoteur:</span> {school.promoteur}</p>
                   <p><span className="text-gray-400">Tél:</span> {school.phone}</p>
+                  <p><span className="text-gray-400">Saisi par:</span> <span className="font-medium">{school.createdBy ?? '—'}</span></p>
                   {school.description && (
                     <p className="mt-2 text-gray-500 italic line-clamp-2 border-l-2 border-gray-200 pl-2">{school.description}</p>
                   )}
@@ -397,6 +406,7 @@ export function Schools() {
 
       {isImportOpen && (
         <ExcelImport
+          createdBy={user?.username ?? 'inconnu'}
           onClose={() => setIsImportOpen(false)}
           onImported={() => {
             setIsImportOpen(false);
