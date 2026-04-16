@@ -12,6 +12,7 @@ import { Schools } from './pages/Schools';
 import { AdminUsers } from './pages/AdminUsers';
 import { Login } from './pages/Login';
 import { PWAUpdatePrompt } from './components/PWAUpdatePrompt';
+import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 
 function ProtectedRoutes() {
   const { user, loading } = useAuth();
@@ -32,6 +33,7 @@ export default function App() {
       <BrowserRouter>
         <Toaster position="top-right" richColors />
         <PWAUpdatePrompt />
+        <PWAInstallPrompt />
         <Routes>
           <Route path="/login" element={<AuthRedirect />} />
           <Route path="/*" element={<AppRoutes />} />
