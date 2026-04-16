@@ -15,16 +15,14 @@ CREATE INDEX IF NOT EXISTS idx_app_users_username ON public.app_users (username)
 ALTER TABLE public.app_users ENABLE ROW LEVEL SECURITY;
 
 -- Anon can SELECT (needed to verify a username at login time)
-CREATE POLICY "Anyone can read app_users"
-  ON public.app_users FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "read_app_users"
+  ON public.app_users FOR SELECT USING (true);
 
--- Anon can INSERT (admin creates users from the frontend with the anon key)
-CREATE POLICY "Anyone can insert app_users"
-  ON public.app_users FOR INSERT TO anon, authenticated WITH CHECK (true);
+CREATE POLICY "insert_app_users"
+  ON public.app_users FOR INSERT WITH CHECK (true);
 
--- Anon can DELETE (admin deletes users from the frontend)
-CREATE POLICY "Anyone can delete app_users"
-  ON public.app_users FOR DELETE TO anon, authenticated USING (true);
+CREATE POLICY "delete_app_users"
+  ON public.app_users FOR DELETE USING (true);
 
 -- ---------------------------------------------------------------------------
 -- Seed: initial super admin account
