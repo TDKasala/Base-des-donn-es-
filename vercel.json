@@ -1,4 +1,7 @@
 {
+  "rewrites": [
+    { "source": "/((?!sw.js|workbox-.*\\.js|assets/|icons/|manifest\\.webmanifest).*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/sw.js",
