@@ -18,8 +18,6 @@ export default defineConfig(({mode}) => {
           globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
           navigateFallback: '/index.html',
           cleanupOutdatedCaches: true,
-          clientsClaim: true,
-          skipWaiting: true
         },
         manifest: {
           name: 'SchoolConnect CRM',
