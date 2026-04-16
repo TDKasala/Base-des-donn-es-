@@ -11,7 +11,7 @@ export default defineConfig(({mode}) => {
       react(), 
       tailwindcss(),
       VitePWA({
-        registerType: 'autoUpdate',
+        registerType: 'prompt',
         includeAssets: ['icon.svg', 'apple-touch-icon.png'],
         injectRegister: 'auto',
         workbox: {
