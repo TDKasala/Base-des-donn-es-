@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { School, SchoolStatus } from '../types';
-import { getSchools, saveSchools } from '../utils/storage';
+import { getSchools, addSchool, updateSchool, deleteSchool } from '../utils/storage';
 import { SchoolForm } from '../components/SchoolForm';
 import { Plus, Search, Edit2, Trash2, Building2, Upload, FileDown, ChevronLeft, ChevronRight, Code2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -17,47 +17,54 @@ export function Schools() {
   const [activeFilter, setActiveFilter] = useState<SchoolStatus | 'All'>('All');
   const [currentPage, setCurrentPage] = useState(1);
   const [isSqlPanelOpen, setIsSqlPanelOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const itemsPerPage = 10;
 
   useEffect(() => {
-    setSchools(getSchools());
+    getSchools().then((data) => {
+      setSchools(data);
+      setIsLoading(false);
+    });
   }, []);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, activeFilter]);
 
-  const handleAddSchool = (data: Omit<School, 'id' | 'createdAt'>) => {
-    const newSchool: School = {
-      ...data,
-      id: Math.random().toString(36).substr(2, 9),
-      createdAt: Date.now(),
-    };
-    const updatedSchools = [newSchool, ...schools];
-    setSchools(updatedSchools);
-    saveSchools(updatedSchools);
+  const handleAddSchool = async (data: Omit<School, 'id' | 'createdAt'>) => {
+    const newSchool = await addSchool(data);
+    if (!newSchool) {
+      toast.error('Erreur lors de l\'ajout de l\'école');
+      return;
+    }
+    setSchools((prev) => [newSchool, ...prev]);
     setIsFormOpen(false);
     toast.success('École ajoutée avec succès');
   };
 
-  const handleEditSchool = (data: Omit<School, 'id' | 'createdAt'>) => {
+  const handleEditSchool = async (data: Omit<School, 'id' | 'createdAt'>) => {
     if (!editingSchool) return;
-    const updatedSchools = schools.map((s) =>
-      s.id === editingSchool.id ? { ...s, ...data } : s
+    const ok = await updateSchool(editingSchool.id, data);
+    if (!ok) {
+      toast.error('Erreur lors de la modification de l\'école');
+      return;
+    }
+    setSchools((prev) =>
+      prev.map((s) => (s.id === editingSchool.id ? { ...s, ...data } : s))
     );
-    setSchools(updatedSchools);
-    saveSchools(updatedSchools);
     setEditingSchool(null);
     toast.success('École modifiée avec succès');
   };
 
-  const handleDeleteSchool = (id: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette école ?')) {
-      const updatedSchools = schools.filter((s) => s.id !== id);
-      setSchools(updatedSchools);
-      saveSchools(updatedSchools);
-      toast.success('École supprimée');
+  const handleDeleteSchool = async (id: string) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette école ?')) return;
+    const ok = await deleteSchool(id);
+    if (!ok) {
+      toast.error('Erreur lors de la suppression de l\'école');
+      return;
     }
+    setSchools((prev) => prev.filter((s) => s.id !== id));
+    toast.success('École supprimée');
   };
 
   const filteredSchools = schools.filter((school) => {
@@ -195,7 +202,13 @@ export function Schools() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {paginatedSchools.length > 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-400 text-sm">
+                    Chargement…
+                  </td>
+                </tr>
+              ) : paginatedSchools.length > 0 ? (
                 paginatedSchools.map((school) => (
                   <tr key={school.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4 font-medium text-gray-900">{school.ecole}</td>
@@ -242,7 +255,9 @@ export function Schools() {
 
         {/* Mobile Card View */}
         <div className="grid grid-cols-1 gap-4 md:hidden mt-4">
-          {paginatedSchools.length > 0 ? (
+          {isLoading ? (
+            <div className="py-12 text-center text-gray-400 text-sm">Chargement…</div>
+          ) : paginatedSchools.length > 0 ? (
             paginatedSchools.map((school) => (
               <div key={school.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3">
                 <div className="flex justify-between items-start">

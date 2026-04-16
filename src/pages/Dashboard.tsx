@@ -7,7 +7,7 @@ export function Dashboard() {
   const [schools, setSchools] = useState<School[]>([]);
 
   useEffect(() => {
-    setSchools(getSchools());
+    getSchools().then(setSchools);
   }, []);
 
   const stats = [
