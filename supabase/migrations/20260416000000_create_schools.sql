@@ -4,12 +4,16 @@
 -- ---------------------------------------------------------------------------
 -- 1. Custom enum for school status
 -- ---------------------------------------------------------------------------
-CREATE TYPE school_status AS ENUM (
-  'En attente',
-  'Contacté',
-  'Client',
-  'Refusé'
-);
+DO $$ BEGIN
+  CREATE TYPE school_status AS ENUM (
+    'En attente',
+    'Contacté',
+    'Client',
+    'Refusé'
+  );
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ---------------------------------------------------------------------------
 -- 2. Schools table
@@ -39,6 +43,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS schools_set_updated_at ON public.schools;
 CREATE TRIGGER schools_set_updated_at
 BEFORE UPDATE ON public.schools
 FOR EACH ROW
