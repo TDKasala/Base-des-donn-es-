@@ -3,7 +3,7 @@ import { School, SchoolStatus } from '../types';
 import { getSchools, addSchool, updateSchool, deleteSchool } from '../utils/storage';
 import { SchoolForm } from '../components/SchoolForm';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, Search, Edit2, Trash2, Building2, FileDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Building2, FileDown, ChevronLeft, ChevronRight, CalendarClock } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
 import jsPDF from 'jspdf';
@@ -115,6 +115,20 @@ export function Schools() {
 
   const filters: (SchoolStatus | 'All')[] = ['All', 'En attente', 'Contacté', 'Client', 'Refusé'];
 
+  const getAppointmentBadge = (appointmentDate?: string) => {
+    if (!appointmentDate) return null;
+    const now = new Date();
+    const appt = new Date(appointmentDate);
+    const diffH = (appt.getTime() - now.getTime()) / (1000 * 60 * 60);
+    if (appt < now) return { label: 'En retard', cls: 'bg-red-100 text-red-700' };
+    if (diffH < 24) return { label: "Aujourd'hui", cls: 'bg-amber-100 text-amber-700' };
+    if (diffH < 48) return { label: 'Demain', cls: 'bg-blue-100 text-blue-700' };
+    return {
+      label: appt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+      cls: 'bg-gray-100 text-gray-600',
+    };
+  };
+
   const getStatusColor = (status: SchoolStatus) => {
     switch (status) {
       case 'En attente': return 'bg-gray-100 text-gray-700';
@@ -206,7 +220,19 @@ export function Schools() {
               ) : paginatedSchools.length > 0 ? (
                 paginatedSchools.map((school) => (
                   <tr key={school.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-gray-900">{school.ecole}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="font-medium text-gray-900">{school.ecole}</span>
+                        {(() => {
+                          const badge = getAppointmentBadge(school.appointmentDate);
+                          return badge ? (
+                            <span className={cn('inline-flex items-center gap-1 w-fit px-2 py-0.5 rounded-full text-xs font-medium', badge.cls)}>
+                              <CalendarClock className="w-3 h-3" />{badge.label}
+                            </span>
+                          ) : null;
+                        })()}
+                      </div>
+                    </td>
                     <td className="px-6 py-4 text-gray-600">{school.lieu}</td>
                     <td className="px-6 py-4 text-gray-600">{school.promoteur}</td>
                     <td className="px-6 py-4 text-gray-600">{school.phone}</td>
@@ -264,6 +290,14 @@ export function Schools() {
                   <div>
                     <h3 className="font-medium text-gray-900">{school.ecole}</h3>
                     <p className="text-sm text-gray-500">{school.lieu}</p>
+                    {(() => {
+                      const badge = getAppointmentBadge(school.appointmentDate);
+                      return badge ? (
+                        <span className={cn('inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-medium', badge.cls)}>
+                          <CalendarClock className="w-3 h-3" />{badge.label}
+                        </span>
+                      ) : null;
+                    })()}
                   </div>
                   <span className={cn('px-2.5 py-1 rounded-full text-xs font-medium', getStatusColor(school.status))}>
                     {school.status}

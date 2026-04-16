@@ -10,4 +10,5 @@ export interface School {
   description?: string;
   createdAt: number;
   createdBy?: string;
+  appointmentDate?: string; // ISO string, e.g. "2026-04-21T09:00"
 }

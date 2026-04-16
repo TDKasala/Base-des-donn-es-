@@ -22,6 +22,7 @@ export const getSchools = async (): Promise<School[]> => {
     description: row.description ?? undefined,
     createdAt: new Date(row.created_at).getTime(),
     createdBy: row.created_by ?? undefined,
+    appointmentDate: row.appointment_date ?? undefined,
   }));
 };
 
@@ -39,6 +40,7 @@ export const addSchool = async (
       status: school.status,
       description: school.description ?? null,
       created_by: createdBy,
+      appointment_date: school.appointmentDate ?? null,
     })
     .select()
     .single();
@@ -58,6 +60,7 @@ export const addSchool = async (
     description: data.description ?? undefined,
     createdAt: new Date(data.created_at).getTime(),
     createdBy: data.created_by ?? undefined,
+    appointmentDate: data.appointment_date ?? undefined,
   };
 };
 
@@ -71,6 +74,7 @@ export const updateSchool = async (id: string, school: Omit<School, 'id' | 'crea
       phone: school.phone,
       status: school.status,
       description: school.description ?? null,
+      appointment_date: school.appointmentDate ?? null,
     })
     .eq('id', id);
 
