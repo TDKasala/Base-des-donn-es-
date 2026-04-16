@@ -1,14 +1,17 @@
-import { Bell, Search, User, Menu } from 'lucide-react';
+import { Bell, Search, Menu } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface HeaderProps {
   onMenuClick: () => void;
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
+  const { user } = useAuth();
+
   return (
     <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 md:px-6 shrink-0">
       <div className="flex items-center gap-4 flex-1">
-        <button 
+        <button
           onClick={onMenuClick}
           className="p-2 -ml-2 text-gray-600 hover:bg-gray-50 rounded-lg md:hidden"
         >
@@ -28,8 +31,11 @@ export function Header({ onMenuClick }: HeaderProps) {
           <Bell className="w-5 h-5" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
         </button>
-        <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-medium shrink-0">
-          <User className="w-4 h-4" />
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm shrink-0">
+            {user?.username?.[0]?.toUpperCase() ?? '?'}
+          </div>
+          <span className="hidden md:block text-sm font-medium text-gray-700">{user?.username}</span>
         </div>
       </div>
     </header>
