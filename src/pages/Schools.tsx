@@ -8,6 +8,7 @@ import { cn } from '../lib/utils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { SqlQueryPanel } from '../components/SqlQueryPanel';
+import { ExcelImport } from '../components/ExcelImport';
 
 export function Schools() {
   const [schools, setSchools] = useState<School[]>([]);
@@ -17,6 +18,7 @@ export function Schools() {
   const [activeFilter, setActiveFilter] = useState<SchoolStatus | 'All'>('All');
   const [currentPage, setCurrentPage] = useState(1);
   const [isSqlPanelOpen, setIsSqlPanelOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const itemsPerPage = 10;
 
@@ -133,6 +135,13 @@ export function Schools() {
           <p className="text-gray-500 mt-1">Gérez votre base de données d'écoles.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <button
+            onClick={() => setIsImportOpen(true)}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-colors shadow-sm w-full sm:w-auto"
+          >
+            <Upload className="w-5 h-5" />
+            <span>Importer</span>
+          </button>
           <button
             onClick={() => setIsSqlPanelOpen(true)}
             className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-colors shadow-sm w-full sm:w-auto"
@@ -383,6 +392,21 @@ export function Schools() {
           searchQuery={searchQuery}
           activeFilter={activeFilter}
           onClose={() => setIsSqlPanelOpen(false)}
+        />
+      )}
+
+      {isImportOpen && (
+        <ExcelImport
+          onClose={() => setIsImportOpen(false)}
+          onImported={() => {
+            setIsImportOpen(false);
+            setIsLoading(true);
+            getSchools().then((data) => {
+              setSchools(data);
+              setIsLoading(false);
+              toast.success('Données importées avec succès');
+            });
+          }}
         />
       )}
     </div>
