@@ -65,30 +65,15 @@ CREATE INDEX IF NOT EXISTS idx_schools_created_at  ON public.schools (created_at
 -- ---------------------------------------------------------------------------
 ALTER TABLE public.schools ENABLE ROW LEVEL SECURITY;
 
--- Allow authenticated users full CRUD on their own data.
--- Replace this with your own auth logic if needed (e.g. per-user isolation).
+-- No role restriction: app uses anon key with custom auth (not Supabase Auth).
+CREATE POLICY "read_schools"
+  ON public.schools FOR SELECT USING (true);
 
-CREATE POLICY "Authenticated users can read schools"
-  ON public.schools
-  FOR SELECT
-  TO authenticated
-  USING (true);
+CREATE POLICY "insert_schools"
+  ON public.schools FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Authenticated users can insert schools"
-  ON public.schools
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (true);
+CREATE POLICY "update_schools"
+  ON public.schools FOR UPDATE USING (true) WITH CHECK (true);
 
-CREATE POLICY "Authenticated users can update schools"
-  ON public.schools
-  FOR UPDATE
-  TO authenticated
-  USING (true)
-  WITH CHECK (true);
-
-CREATE POLICY "Authenticated users can delete schools"
-  ON public.schools
-  FOR DELETE
-  TO authenticated
-  USING (true);
+CREATE POLICY "delete_schools"
+  ON public.schools FOR DELETE USING (true);
