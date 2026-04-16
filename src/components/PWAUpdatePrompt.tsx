@@ -7,16 +7,24 @@ export function PWAUpdatePrompt() {
     needRefresh: [needRefresh],
     updateServiceWorker,
   } = useRegisterSW({
-    onNeedRefresh() {
-      // triggered automatically when a new SW is waiting
-    },
+    onNeedRefresh() {},
     onRegisteredSW(_swUrl, r) {
-      // Poll for updates every 60 s while online
-      if (r) {
-        setInterval(() => {
-          if (navigator.onLine) r.update();
-        }, 60 * 1000);
-      }
+      if (!r) return;
+
+      // Check on focus (user returns to tab)
+      const checkOnFocus = () => { if (navigator.onLine) r.update(); };
+      window.addEventListener('focus', checkOnFocus);
+
+      // Check every 30 seconds
+      const interval = setInterval(() => {
+        if (navigator.onLine) r.update();
+      }, 30 * 1000);
+
+      // Cleanup on SW unregister (unlikely but safe)
+      r.addEventListener('updatefound', () => {
+        clearInterval(interval);
+        window.removeEventListener('focus', checkOnFocus);
+      });
     },
   });
 
